@@ -17,12 +17,15 @@ line = [[1,2],
         [4,7],
         [4,7],
         [6,5]]
+path_point = []
+path_line = []
 look = (0,-1000,0)
 move = 1
 theta = 0
 alpha = 0
 press = [0,0,0,0,0,0]
 show = []
+path_show = []
 def update():
     global alpha, theta, press, show, graph, move
     print(theta, ' ', alpha)
@@ -33,13 +36,26 @@ def update():
         y = math.cos(alpha)*graph[i][1]*move-math.sin(alpha)*graph[i][2]*move
         z = math.sin(alpha)*graph[i][1]*move+math.cos(alpha)*graph[i][2]*move
         show[i] = angle_of_vision((x,y,z), look)
+    for i in range(len(path_point)):
+        x,y,z = path_point[i]
+        x = math.cos(theta)*path_point[i][0]*move-math.sin(theta)*path_point[i][1]*move
+        y = math.sin(theta)*path_point[i][0]*move+math.cos(theta)*path_point[i][1]*move
+        y = math.cos(alpha)*path_point[i][1]*move-math.sin(alpha)*path_point[i][2]*move
+        z = math.sin(alpha)*path_point[i][1]*move+math.cos(alpha)*path_point[i][2]*move
+        path_show[i] = angle_of_vision((x,y,z), look)
+    
     canvas.delete("map")
+    canvas.delete("path")
     for i in show:
         canvas.create_oval(origin[0]+i[0]+2, origin[1]+i[2]+2, origin[0]+i[0]-2, origin[1]+i[2]-2, fill = "#FFFFFF", tags = "map")
+    for i in point_show:
+        canvas.create_oval(origin[0]+i[0]+2, origin[1]+i[2]+2, origin[0]+i[0]-2, origin[1]+i[2]-2, fill = "#FFFF00", tags = "path")
     for i in range(len(line)):
         for j in line[i]:
             canvas.create_line(origin[0]+show[i][0], origin[1]+show[i][2], origin[0]+show[j][0], origin[1]+show[j][2], fill = "#FFFFFF", tags = "map")
-
+    for i in range(len(path_line)):
+        for j in path_line[i]:
+            canvas.create_line(origin[0]+show[i][0], origin[1]+show[i][2], origin[0]+show[j][0], origin[1]+show[j][2], fill = "#FF0000", tags = "path")
 def start():
     global alpha, theta, press, move
     if press[0]:
@@ -105,11 +121,19 @@ canvas = Canvas(root, bg = "#000000", width = 1080, height = 720)
 
 for i in graph:
     show.append(angle_of_vision(i, look))
+for i in path_point:
+    path_show.append(angle_of_vision(i, look))
 canvas.pack()
 for i in show:
     canvas.create_oval(origin[0]+i[0]+2, origin[1]+i[2]+2, origin[0]+i[0]-2, origin[1]+i[2]-2, fill = "#FFFFFF", tags = "map")
 for i in range(len(line)):
     for j in line[i]:
         canvas.create_line(origin[0]+show[i][0], origin[1]+show[i][2], origin[0]+show[j][0], origin[1]+show[j][2], fill = "#FFFFFF", tags = "map")
+        
+for i in path_show:
+    canvas.create_oval(origin[0]+i[0]+2, origin[1]+i[2]+2, origin[0]+i[0]-2, origin[1]+i[2]-2, fill = "#FFFF00", tags = "path")
+for i in range(len(path_line)):
+    for j in path_line[i]:
+        canvas.create_line(origin[0]+path_show[i][0], origin[1]+path_show[i][2], origin[0]+path_show[j][0], origin[1]+path_show[j][2], fill = "#FF0000", tags = "path")
 start()
 root.mainloop()
