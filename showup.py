@@ -5,9 +5,13 @@ def angle_of_vision(point, watcher):
     k = watcher[1]/vec[1] * -1
     ret = [0,0,0]
     for i in range(3):
+        
         ret[i] = watcher[i]+vec[i] * k;
+    print(ret)
     return ret
-
+ori_graph = []
+ori_path = []
+start_program = False
 graph = [(-50,-50,-15), (50,-50,-15), (-50,50,-15), (50,50,-15), (-50,-50,15), (50,-50,15), (-50,50,15), (50,50,15),
          (-100,0,0),(100,0,0),(0,-100,0),(0,100,0),(0,0,-100),(0,0,100)]
 line = [[1,2],
@@ -37,14 +41,26 @@ alpha = 0
 press = [0,0,0,0,0,0]
 show = []
 path_show = []
+
+if not start_program:
+    print("change")
+    for i in range(len(graph)):
+        ori_graph.append(graph[i])
+    for i in range(len(path_point)):
+        ori_path.append(path_point[i])
+    start_program = True
+
 def update():
     global alpha, theta, press, show, graph, move
-    print(theta*180/math.pi, ' ', alpha*180/math.pi)
-    print(move)
+    print(graph)
+    print(path_point)
+    #print(ori_graph)
+    #print(ori_path)
+    print(len(ori_graph))
     for i in range(len(graph)):
         x,y,z = graph[i]
         x = math.cos(theta)*graph[i][0]-math.sin(theta)*graph[i][1]
-        y = math.sin(theta)*graph[i][0]*move+math.cos(theta)*graph[i][1]
+        y = math.sin(theta)*graph[i][0]+math.cos(theta)*graph[i][1]
         graph[i] = x,y,z
         y = math.cos(alpha)*graph[i][1]-math.sin(alpha)*graph[i][2]
         z = math.sin(alpha)*graph[i][1]+math.cos(alpha)*graph[i][2]
@@ -52,6 +68,7 @@ def update():
         x*=move
         y*=move
         z*=move
+        
         show[i] = angle_of_vision((x,y,z), look)
     for i in range(len(path_point)):
         x,y,z = path_point[i]
@@ -65,8 +82,8 @@ def update():
         y*=move
         z*=move
         path_show[i] = angle_of_vision((x,y,z), look)
-    pt = graph[-6:]
     '''
+    pt = graph[-6:]
     for i in range(len(pt)):
         x,y,z = pt[i]
         x = math.cos(theta)*pt[i][0]-math.sin(theta)*pt[i][1]
@@ -99,7 +116,7 @@ def update():
     alpha = 0
     #move = 10
 def start():
-    global alpha, theta, press, move
+    global alpha, theta, press, move, ori_graph, ori_path
     if press[0]:
         theta+=math.pi/12
     if press[1]:
@@ -125,7 +142,7 @@ def start():
     update()
     root.after(50, start)
 def control(event):
-    global alpha, theta, press
+    global alpha, theta, press, ori_graph, ori_path, move, graph, path_point
     if event.char == 'a' or event.keysym == 'Left':
         press[0] = 1
     elif event.char == 'd' or event.keysym == 'Right':
@@ -139,8 +156,17 @@ def control(event):
     elif event.char == '-':
         press[5] = 1
     elif event.char == 'r':
-        theta = 0
+        #print("RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR")
+        graph.clear()
+        path_point.clear()
+        #print(len(graph))
+        for i in range(len(ori_graph)):
+            graph.append(ori_graph[i])
+        for i in range(len(ori_path)):
+            path_point.append(ori_path[i])
         alpha = 0
+        theta = 0
+        move = 1
 def release(event):
     global alpha, theta, press
     if event.char == 'a' or event.keysym == 'Left':
@@ -164,7 +190,6 @@ root.bind("<KeyRelease>", release)
 origin = (540, 360)
 
 canvas = Canvas(root, bg = "#000000", width = 1080, height = 720)
-
 for i in graph:
     show.append(angle_of_vision(i, look))
 for i in path_point:
