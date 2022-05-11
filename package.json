@@ -1,0 +1,20 @@
+{
+  "name": "ytp-project",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "canvas": "^2.9.1",
+    "doc": "^0.0.3",
+    "document": "^0.0.0",
+    "ejs": "^3.1.7",
+    "express": "^4.17.3",
+    "path": "^0.12.7",
+    "puppeteer": "^13.6.0"
+  }
+}

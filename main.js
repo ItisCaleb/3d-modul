@@ -9,4 +9,4 @@ app.get('/', (req, res) => {
 });
 app.use('/assets', express.static(path.join(__dirname, 'assets')));
 app.listen(7122);
-console.log("test");
+console.log("server is on now");
