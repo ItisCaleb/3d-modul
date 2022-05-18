@@ -11,7 +11,7 @@
     <h1>Maps</h1>
     <p>testing</p>
     <canvas id="maps" onmousemove="draw(event)" onmousewheel="resize(event)" style="margin:0;padding:0;border:1px solid #000000;" class="canvasView" width="1080" height="720"></canvas>
-    <button type="button" onclick="reset()">reset</button>
+    <br>
     <button type="1F" onclick="switch_floor(1)">1F</button>
     <button type="2F" onclick="switch_floor(2)">2F</button>
     <button type="3F" onclick="switch_floor(3)">3F</button>
@@ -20,8 +20,12 @@
     <button type="6F" onclick="switch_floor(6)">6F</button>
     <button type="7F" onclick="switch_floor(7)">7F</button>
     <button type="8F" onclick="switch_floor(8)">8F</button>
+    <button type="button" onclick="reset()">reset</button>
+    <br>
+    <p id=fword> show show show show show show show show</p>
     <script src="..\assets\script.js"></script>
-
+    <input name="point" type="number" placeholder="更改點狀態"><br>
+    <button onclick="setpoint()">確認</button>
 </body>
 
 </html>
