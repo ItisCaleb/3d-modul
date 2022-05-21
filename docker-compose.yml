@@ -1,0 +1,14 @@
+version: "3.5"
+services:
+  ap-sql:
+    image: mysql
+    container_name: ap-sql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
+      MYSQL_DATABASE: "ap"
+    volumes:
+      - ./sqldata:/var/lib/mysql
+    restart: unless-stopped
+
