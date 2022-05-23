@@ -1,5 +1,3 @@
-//const PriorityQueue = require("js-priority-queue");
-
 var canva = document.getElementById("maps");
 var ctx = canva.getContext("2d");
 var graph = [
@@ -2382,7 +2380,7 @@ var stair_point = [
     [199, 39, -105],
 
 ];
-var point_status = new Array(path_point.length);
+// var point_status = new Array(path_point.length);
 var path_line = [
     [0, 1],
 ];
@@ -2392,7 +2390,7 @@ var ori_path = [];
 var ori_stair = [];
 var look = [0, -1000, 0];
 var move = 1;
-var theta = 0;
+var theta = Math.PI;
 var alpha = 0;
 var show = [];
 var path_show = [];
@@ -2403,8 +2401,6 @@ var linepath = '.\\edge.txt';
 var Floor = [];
 var wifiFloor = [];
 var stairFloor = [];
-var THETA = 0;
-var ALPHA = 0;
 
 function getMousePos(canvas, evt) {
     var rect = canvas.getBoundingClientRect();
@@ -2418,11 +2414,9 @@ function angle_of_vision(point, watcher) {
     var vec = [point[0] - watcher[0], point[1] - watcher[1], point[2] - watcher[2]]
     var k = watcher[1] / vec[1] * -1;
     var ret = [0, 0, 0];
-    // console.log(vec, " ", k, " ", ret)
     for (let i = 0; i < 3; i++) {
         ret[i] = watcher[i] + vec[i] * k;
     }
-    //console.log(ret);
     return ret;
 
 }
@@ -2439,72 +2433,7 @@ function get_ip(url, cb) {
     };
 }
 
-function inline(loc) {
-    for (let i = 0; i < line.length; i++) {
-        var a = ori_graph[line[i][0]];
-        var b = ori_graph[line[i][1]];
-        if (loc[0] <= Math.max(a[0], b[0]) && loc[0] >= Math.min(a[0], b[0])) {
-            if (loc[1] <= Math.max(a[1], b[1]) && loc[1] >= Math.min(a[1], b[1])) {
-                if (loc[2] <= Math.max(a[2], b[2]) && loc[2] >= Math.min(a[2], b[2])) {
-                    return 1;
-                }
-            }
-        }
-
-    }
-    return 0;
-}
-
-function make_Line(nowlocate, endlocate, path) {
-    var que = []; //nowlocate, go on, fromlocate
-    var from = new Map();
-    var havepath = [];
-    var tmp = [nowlocate, -1, -1];
-    que.push(tmp);
-    while (que.length && que[0][0] != endlocate) {
-        var now = que[0];
-        if (!from[now[0]]) {
-            from[now[0]] = now[2];
-        }
-        que.shift();
-        if (!havepath.includes(now[0])) {
-            havepath.push(now[0]);
-            tmp = [now[0][0] + 1, now[0][1], now[0][2]];
-            que.push([tmp, 1, ((now[1] == 1) ? now[2] : now[0])]);
-            tmp = [now[0][0], now[0][1] + 1, now[0][2]];
-            que.push([tmp, 2, ((now[1] == 2) ? now[2] : now[0])]);
-            tmp = [now[0][0] - 1, now[0][1], now[0][2]];
-            que.push([tmp, 3, ((now[1] == 3) ? now[2] : now[0])]);
-            tmp = [now[0][0], now[0][1] - 1, now[0][2]];
-            que.push([tmp, 4, ((now[1] == 4) ? now[2] : now[0])]);
-        }
-    }
-    var ret = [];
-    var nowl = endlocate;
-    while (nowl != nowlocate) {
-        x = nowl[0]
-        y = nowl[1]
-        z = nowl[2]
-        x = Math.cos(THETA) * nowl[0] - Math.sin(THETA) * nowl[1]
-        y = Math.sin(THETA) * nowl[0] + Math.cos(THETA) * nowl[1]
-        nowl = [x, y, z]
-        y = Math.cos(ALPHA) * nowl[1] - Math.sin(ALPHA) * nowl[2]
-        z = Math.sin(ALPHA) * nowl[1] + Math.cos(ALPHA) * nowl[2]
-        nowl = [x, y, z]
-        x *= move
-        y *= move
-        z *= move
-        nowl = angle_of_vision([x, y, z], look);
-        ret.unshift(nowl);
-        nowl = from[nowl];
-    }
-    ret.unshift(nowlocate);
-    return ret;
-
-}
-
 function show_up() {
-    //console.log(f);
     for (let i = 0; i < show.length; i++) {
         if (f[Floor[i]]) {
             ctx.beginPath();
@@ -2526,47 +2455,35 @@ function show_up() {
     }
     for (let i = 0; i < stair_show.length; i++) {
         if (f[stairFloor[i]]) {
-            ctx.beginPath();
-            ctx.fillStyle = "#7E654C";
-            ctx.strokeStyle = "#7E654C";
-            ctx.arc(origin[0] + stair_show[i][0], origin[1] + stair_show[i][2], 2, 0, 2 * Math.PI);
-            ctx.fill();
-            ctx.stroke();
+            if (move > 0.4) {
+                ctx.beginPath();
+                ctx.fillStyle = "#7E654C";
+                ctx.strokeStyle = "#7E654C";
+                ctx.arc(origin[0] + stair_show[i][0], origin[1] + stair_show[i][2], Math.min(2 * move, 3), 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.stroke();
+            }
         }
     }
     for (let i = 0; i < path_show.length; i++) {
-        if (f[wifiFloor[i]] && !point_status[i]) {
-            ctx.beginPath();
-            ctx.fillStyle = "#AA00AA";
-            ctx.strokeStyle = "#AA00AA";
-            ctx.arc(origin[0] + path_show[i][0], origin[1] + path_show[i][2], 2, 0, 2 * Math.PI);
-            ctx.fill();
-            ctx.stroke();
+        if (f[wifiFloor[i]] /*&& !point_status[i]*/ ) {
+            if (move > 0.4) {
+                ctx.beginPath();
+                ctx.fillStyle = "#AA00AA";
+                ctx.strokeStyle = "#AA00AA";
+                ctx.arc(origin[0] + path_show[i][0], origin[1] + path_show[i][2], Math.min(2 * move, 3), 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.stroke();
+            }
         }
     }
     for (let i = 0; i < path_line.length; i++) {
-        if (f[wifiFloor[line[i][0]]] && f[wifiFloor[line[i][1]]] && !point_status[line[i][0]] && !point_status[line[i][1]]) {
+        if (f[wifiFloor[line[i][0]]] && f[wifiFloor[line[i][1]]] /*&& !point_status[line[i][0]] && !point_status[line[i][1]] */ ) {
             ctx.beginPath();
-            console.log(path_show[0])
-            console.log(path_show[1])
             ctx.moveTo(origin[0] + path_show[path_line[i][0]][0], origin[1] + path_show[path_line[i][0]][2]);
             ctx.lineTo(origin[0] + path_show[path_line[i][1]][0], origin[1] + path_show[path_line[i][1]][2]);
             ctx.strokeStyle = "#AA0000";
             ctx.stroke();
-            // var pt = [];
-            // pt = make_Line(ori_path[path_line[i][0]], ori_path[path_line[i][1]]);
-            // console.log(pt)
-            // for (var j = 0; j < pt.length - 1; j++) {
-            //     var s = pt[j];
-            //     var e = pt[j + 1];
-            //     ctx.beginPath();
-
-            //     ctx.moveTo(pt[j][0], pt[j][2]);
-            //     ctx.lineTo(pt[j + 1][0], pt[j + 1][2]);
-            //     ctx.strokeStyle = "#AA0000";
-            //     ctx.stroke();
-            // }
-
         }
     }
 }
@@ -2602,12 +2519,6 @@ function Update() {
     ctx.clearRect(0, 0, 1080, 720);
     theta = (delta_x) * Math.PI / 120
     alpha = (delta_y * -1) * Math.PI / 240
-    THETA += (delta_x) * Math.PI / 120
-    while (THETA >= 2 * Math.PI) { THETA -= 2 * Math.PI; }
-    while (THETA <= -2 * Math.PI) { THETA += 2 * Math.PI; }
-    ALPHA += (delta_y * -1) * Math.PI / 240;
-    while (ALPHA >= 2 * Math.PI) { ALPHA -= 2 * Math.PI; }
-    while (ALPHA <= -2 * Math.PI) { ALPHA += 2 * Math.PI; }
     var x = 0,
         y = 0,
         z = 0;
@@ -2665,7 +2576,6 @@ function Update() {
 
 function switch_floor(fl) {
     f[fl] = !f[fl];
-    //console.log(f);
     Update();
     var ans = " ";
     for (var i = 1; i <= 8; i++) {
@@ -2677,17 +2587,14 @@ function switch_floor(fl) {
 function reset() {
     move = 1;
     mouse_last = [0, 0];
-    theta = 0;
+    theta = Math.PI;
     alpha = 0;
     delta_x = 0;
     delta_y = 0;
-    THETA = 0;
-    ALPHA = 0;
     graph = [];
     path_point = [];
     stair_point = [];
     for (let i = 0; i < ori_graph.length; i++) {
-        // console.log(graph[i])
         graph.push(ori_graph[i]);
     }
     for (let i = 0; i < ori_path.length; i++) {
@@ -2697,7 +2604,7 @@ function reset() {
         stair_point.push(ori_stair[i]);
     }
     f = [-1, 1, 1, 1, 1, 1, 1, 1, 1];
-    for (let i = 0; i < point_status.length; i++) point_status[i] = false;
+    // for (let i = 0; i < point_status.length; i++) point_status[i] = false;
     var ans = " ";
     for (var i = 1; i <= 8; i++) {
         ans += (f[i] ? "show " : "invis") + " ";
@@ -2719,7 +2626,6 @@ function resize(evt) {
     move += -0.001 * evt.deltaY;
     move = Math.min(10, move);
     move = Math.max(0, move);
-    //console.log("move", move);
     Update();
 }
 
@@ -2729,8 +2635,6 @@ function draw(evt) {
     }
     if (press) {
         var mouse_now = [getMousePos(canva, evt).x, getMousePos(canva, evt).y];
-        // console.log("x", mouse_now[0], mouse_last[0]);
-        // console.log("y", mouse_now[1], mouse_last[1]);
         delta_x = mouse_now[0] - mouse_last[0];
         delta_y = mouse_now[1] - mouse_last[1];
         mouse_last = mouse_now;
@@ -2743,13 +2647,119 @@ function draw(evt) {
     }
 }
 
-for (let i = 0; i < point_status.length; i++) point_status[i] = false;
+// for (let i = 0; i < point_status.length; i++) point_status[i] = false;
 
-function setpoint() {
-    var input = document.getElementsByName('point')[0]
-    var value = input.value
-    point_status[value] = !point_status[value]
-    console.log(point_status)
-    Update()
-}
+// function setpoint() {
+//     var input = document.getElementsByName('point')[0]
+//     var value = input.value
+//     point_status[value] = !point_status[value]
+//     Update()
+// }
 document.addEventListener('drag', draw)
+
+var floor_canva = document.getElementById("floor");
+var floor_ctx = floor_canva.getContext("2d");
+var wantto = -1;
+var floor_origin = [222, 136];
+var now_floor = 0;
+
+function inpoint(mouse, point) {
+    if (Math.abs(mouse[0] - (floor_origin[0] - point[0])) <= 10 && Math.abs(mouse[1] - (floor_origin[1] + point[1])) <= 10) {
+        return true;
+    }
+    return false;
+}
+
+function floor_click(evt) {
+    var mouse = [0, 0];
+    var choose = 0;
+    var choosestair = 0;
+    mouse = [getMousePos(floor_canva, evt).x, getMousePos(floor_canva, evt).y];
+    for (let i = 0; i < ori_path.length; i++) {
+        if (wifiFloor[i] == now_floor) {
+            if (inpoint(mouse, ori_path[i])) {
+                wantto = i;
+                choose = 1;
+                break;
+            }
+        }
+    }
+    if (!choose) {
+        for (let i = 0; i < ori_stair.length; i++) {
+            if (stairFloor[i] == now_floor) {
+                if (inpoint(mouse, ori_stair[i])) {
+                    wantto = i;
+                    choosestair = 1;
+                    break;
+                }
+            }
+        }
+        if (!choosestair)
+            wantto = -1;
+        else
+            console.log("stair %d", wantto);
+    } else
+        console.log("wifi %d", wantto);
+}
+
+
+function show_up_floor(choose_floor) {
+    now_floor = choose_floor
+    console.log(choose_floor);
+    floor_ctx.clearRect(0, 0, 445, 272);
+    for (let i = 0; i < ori_graph.length; i++) {
+        if (Floor[i] == choose_floor) {
+            floor_ctx.beginPath();
+            floor_ctx.fillStyle = "#000000";
+            floor_ctx.strokeStyle = "#000000";
+            floor_ctx.arc(floor_origin[0] - ori_graph[i][0], floor_origin[1] + ori_graph[i][1], 1, 0, 2 * Math.PI);
+            floor_ctx.fill();
+            floor_ctx.stroke();
+        }
+    }
+    for (let i = 0; i < line.length; i++) {
+        if (Floor[line[i][0]] == choose_floor && Floor[line[i][1]] == choose_floor) {
+            floor_ctx.beginPath();
+            floor_ctx.moveTo(floor_origin[0] - ori_graph[line[i][0]][0], floor_origin[1] + ori_graph[line[i][0]][1]);
+            floor_ctx.lineTo(floor_origin[0] - ori_graph[line[i][1]][0], floor_origin[1] + ori_graph[line[i][1]][1]);
+            floor_ctx.strokeStyle = "#000000";
+            floor_ctx.stroke();
+        }
+    }
+    for (let i = 0; i < ori_stair.length; i++) {
+        if (stairFloor[i] == choose_floor) {
+            floor_ctx.beginPath();
+            floor_ctx.fillStyle = "#7E654C";
+            floor_ctx.strokeStyle = "#7E654C";
+            floor_ctx.arc(floor_origin[0] - ori_stair[i][0], floor_origin[1] + ori_stair[i][1], 2, 0, 2 * Math.PI);
+            floor_ctx.fill();
+            floor_ctx.stroke();
+        }
+    }
+    for (let i = 0; i < ori_path.length; i++) {
+        if (wifiFloor[i] == choose_floor) {
+            floor_ctx.beginPath();
+            floor_ctx.fillStyle = "#AA00AA";
+            floor_ctx.strokeStyle = "#AA00AA";
+            floor_ctx.arc(floor_origin[0] - ori_path[i][0], floor_origin[1] + ori_path[i][1], 2, 0, 2 * Math.PI);
+            floor_ctx.fill();
+            floor_ctx.stroke();
+        }
+    }
+    for (let i = 0; i < path_line.length; i++) {
+        if (wifiFloor[line[i][0]] == choose_floor && wifiFloor[line[i][1]] == choose_floor) {
+            floor_ctx.beginPath();
+            floor_ctx.moveTo(floor_origin[0] - ori_path[path_line[i][0]][0], floor_origin[1] + ori_path[path_line[i][0]][1]);
+            floor_ctx.lineTo(floor_origin[0] - ori_path[path_line[i][1]][0], floor_origin[1] + ori_path[path_line[i][1]][1]);
+            floor_ctx.strokeStyle = "#AA0000";
+            floor_ctx.stroke();
+        }
+    }
+
+}
+var clock = setInterval(catch_data, 3000);
+
+function catch_data() {
+    console.log("抓取資料");
+    Update();
+}

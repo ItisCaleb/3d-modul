@@ -23,9 +23,21 @@
     <button type="button" onclick="reset()">reset</button>
     <br>
     <p id=fword> show show show show show show show show</p>
+    <p>想要去的樓層</p>
+    <button type="1F" onclick="show_up_floor(1)">1F</button>
+    <button type="2F" onclick="show_up_floor(2)">2F</button>
+    <button type="3F" onclick="show_up_floor(3)">3F</button>
+    <button type="4F" onclick="show_up_floor(4)">4F</button>
+    <button type="5F" onclick="show_up_floor(5)">5F</button>
+    <button type="6F" onclick="show_up_floor(6)">6F</button>
+    <button type="7F" onclick="show_up_floor(7)">7F</button>
+    <button type="8F" onclick="show_up_floor(8)">8F</button>
+    <br>
+    <canvas id="floor" onmousedown="floor_click(event)" style="margin:0;padding:0;border:1px solid #000000;" class="canvasView" width="445" height="272"></canvas>
+    <br>
     <script src="..\assets\script.js"></script>
-    <input name="point" type="number" placeholder="更改點狀態"><br>
-    <button onclick="setpoint()">確認</button>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+
 </body>
 
 </html>
