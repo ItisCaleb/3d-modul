@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const app = express();
 const http = require('http');
+const localIpUrl = require('local-ip-url');
 
 const server = http.createServer(app);
 
@@ -18,6 +19,8 @@ app.get('/', (req, res) => {
 app.use('/assets', express.static(path.join(__dirname, 'assets')));
 app.use(api);
 const port = 7122
-server.listen(port,()=>{
-    console.log(`server start at port ${port}`)
+server.listen(port, () => {
+    console.log(`server start at port ${port}`);
+    var ip = localIpUrl();
+    console.log(ip);
 });

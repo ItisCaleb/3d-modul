@@ -2382,7 +2382,24 @@ var stair_point = [
 ];
 // var point_status = new Array(path_point.length);
 var path_line = [
-    [0, 1],
+    [30, 29],
+    [29, 28],
+    [28, 27],
+    [27, 197],
+    [197, 26],
+    [26, 25],
+    [25, 24],
+    [24, 196],
+    [196, 23],
+    [23, 195],
+    [195, 210],
+    [210, 54],
+    [54, 205],
+    [205, 220],
+    [220, 89],
+    [89, 88],
+    [88, 87],
+    [87, 86],
 ];
 var f = [-1, 1, 1, 1, 1, 1, 1, 1, 1]
 var ori_graph = [];
@@ -2421,7 +2438,17 @@ function angle_of_vision(point, watcher) {
 
 }
 
-
+// function get_ip(url, cb) {
+//     var httpRequest = new XMLHttpRequest();
+//     httpRequest.open('GET', url, true);
+//     httpRequest.send();
+//     httpRequest.onreadystatechange = function() {
+//         if (httpRequest.readyState == 4 && httpRequest.status == 200) {
+//             var json = httpRequest.responseText;
+//             cb(json);
+//         }
+//     };
+// }
 
 function show_up() {
     for (let i = 0; i < show.length; i++) {
@@ -2470,8 +2497,19 @@ function show_up() {
     for (let i = 0; i < path_line.length; i++) {
         if (f[wifiFloor[line[i][0]]] && f[wifiFloor[line[i][1]]] /*&& !point_status[line[i][0]] && !point_status[line[i][1]] */ ) {
             ctx.beginPath();
-            ctx.moveTo(origin[0] + path_show[path_line[i][0]][0], origin[1] + path_show[path_line[i][0]][2]);
-            ctx.lineTo(origin[0] + path_show[path_line[i][1]][0], origin[1] + path_show[path_line[i][1]][2]);
+            var tmp = [];
+            if (path_line[i][0] < path_show.length) {
+                tmp = path_show[path_line[i][0]];
+            } else {
+                tmp = stair_show[path_line[i][0] - path_show.length];
+            }
+            ctx.moveTo(origin[0] + tmp[0], origin[1] + tmp[2]);
+            if (path_line[i][1] < path_show.length) {
+                tmp = path_show[path_line[i][1]];
+            } else {
+                tmp = stair_show[path_line[i][1] - path_show.length];
+            }
+            ctx.lineTo(origin[0] + tmp[0], origin[1] + tmp[2]);
             ctx.strokeStyle = "#AA0000";
             ctx.stroke();
         }
@@ -2497,13 +2535,22 @@ for (let i = 0; i < path_point.length; i++) {
 show_up();
 var user_ip;
 
-fetch('/get_ip')
-    .then(res=>res.text())
-    .then(ip=>{
-        user_ip = ip
-        console.log(ip)
-    })
+function json(url) {
+    return fetch(url).then(res => res.json());
+}
 
+let apiKey = 'f3a48a1a1ad4fb6fc6e995dfa044dcd65914eaab12b1fbdbb1d2b18c';
+json(`https://api.ipdata.co?api-key=${apiKey}`).then(data => {
+    console.log(data.ip);
+    console.log(data.city);
+    console.log(data.country_code);
+    // so many more properties
+});
+// get_ip("https://api.ipify.org/?format=json", function(data) {
+//     data = JSON.parse(data);
+//     user_ip = data.ip;
+//     console.log(user_ip);
+// });
 var delta_x = 0,
     delta_y = 0;
 var press = 0;
@@ -2742,8 +2789,19 @@ function show_up_floor(choose_floor) {
     for (let i = 0; i < path_line.length; i++) {
         if (wifiFloor[line[i][0]] == choose_floor && wifiFloor[line[i][1]] == choose_floor) {
             floor_ctx.beginPath();
-            floor_ctx.moveTo(floor_origin[0] - ori_path[path_line[i][0]][0], floor_origin[1] + ori_path[path_line[i][0]][1]);
-            floor_ctx.lineTo(floor_origin[0] - ori_path[path_line[i][1]][0], floor_origin[1] + ori_path[path_line[i][1]][1]);
+            var tmp = [];
+            if (path_line[i][0] < ori_path.length) {
+                tmp = ori_path[path_line[i][0]];
+            } else {
+                tmp = ori_stair[path_line[i][0] - ori_path.length];
+            }
+            floor_ctx.moveTo(floor_origin[0] - tmp[0], floor_origin[1] + tmp[1]);
+            if (path_line[i][1] < ori_path.length) {
+                tmp = ori_path[path_line[i][1]];
+            } else {
+                tmp = ori_stair[path_line[i][1] - ori_path.length];
+            }
+            floor_ctx.lineTo(floor_origin[0] - tmp[0], floor_origin[1] + tmp[1]);
             floor_ctx.strokeStyle = "#AA0000";
             floor_ctx.stroke();
         }
@@ -2752,27 +2810,25 @@ function show_up_floor(choose_floor) {
 }
 let url = `ws://${window.location.host}`
 
-function handlePath(event){
+function handlePath(event) {
     let path = event.data.toString().split(" ");
     path_line = [];
-    for (let i = 1;i<path.length-2;i++){
-        path_line.push([Number(path[i]),Number(path[i+1])])
+    for (let i = 1; i < path.length - 2; i++) {
+        path_line.push([Number(path[i]), Number(path[i + 1])])
     }
     Update();
 }
 
 var ws = new WebSocket(url)
-ws.onopen = ()=>{
-    var clock = setInterval(()=>{
-        if(ws.readyState === ws.CLOSED){
+ws.onopen = () => {
+    var clock = setInterval(() => {
+        if (ws.readyState === ws.CLOSED) {
             ws = new WebSocket(url)
             ws.onmessage = handlePath
-        }else {
+        } else {
             ws.send("gimme path!!!")
         }
     }, 5000);
 
     ws.onmessage = handlePath
 }
-
-
