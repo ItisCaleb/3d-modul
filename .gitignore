@@ -116,3 +116,4 @@ dmypy.json
 .idea
 node_modules
 sqldata
+tools/path
