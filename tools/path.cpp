@@ -54,10 +54,12 @@ int main()
 {
     init();
     int x,y;
+    char ip[30];
     while(1)
     {
-    	cin >> x >> y;
+    	cin >> ip >> x >> y;
     	vector<int> path = dijkstra(x,y);
+    	cout << ip << ' ';
     	for(int v:path) cout << v << ' ';
     	cout << '\n';
 	}

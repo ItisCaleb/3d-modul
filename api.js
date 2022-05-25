@@ -40,12 +40,15 @@ module.exports = (server) =>{
 
     const wss = new SocketServer({server});
 
-    wss.on('connection',(ws)=>{
+    wss.on('connection',(ws,req)=>{
+        this.ip = req.socket.remoteAddress;
         ws.on('message', data=>{
-            path.stdin.write("30 86\n",'utf8')
+            path.stdin.write(`${this.ip} 30 86\n`,'utf8')
         })
         path.stdout.on("data", data=>{
-            ws.send(data.toString())
+            if(data.toString().split(" ")[0] === this.ip){
+                ws.send(data.toString())
+            }
         })
     })
 

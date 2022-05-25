@@ -2751,24 +2751,28 @@ function show_up_floor(choose_floor) {
 
 }
 let url = `ws://${window.location.host}`
+
+function handlePath(event){
+    let path = event.data.toString().split(" ");
+    path_line = [];
+    for (let i = 1;i<path.length-2;i++){
+        path_line.push([Number(path[i]),Number(path[i+1])])
+    }
+    Update();
+}
+
 var ws = new WebSocket(url)
 ws.onopen = ()=>{
     var clock = setInterval(()=>{
         if(ws.readyState === ws.CLOSED){
             ws = new WebSocket(url)
-            ws.onmessage = event =>{
-                console.log(event.data.toString());
-                Update();
-            }
+            ws.onmessage = handlePath
         }else {
             ws.send("gimme path!!!")
         }
     }, 5000);
 
-    ws.onmessage = event =>{
-        console.log(event.data.toString());
-        Update();
-    }
+    ws.onmessage = handlePath
 }
 
 
