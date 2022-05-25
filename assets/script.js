@@ -2421,17 +2421,7 @@ function angle_of_vision(point, watcher) {
 
 }
 
-function get_ip(url, cb) {
-    var httpRequest = new XMLHttpRequest();
-    httpRequest.open('GET', url, true);
-    httpRequest.send();
-    httpRequest.onreadystatechange = function() {
-        if (httpRequest.readyState == 4 && httpRequest.status == 200) {
-            var json = httpRequest.responseText;
-            cb(json);
-        }
-    };
-}
+
 
 function show_up() {
     for (let i = 0; i < show.length; i++) {
@@ -2506,11 +2496,14 @@ for (let i = 0; i < path_point.length; i++) {
 }
 show_up();
 var user_ip;
-get_ip("https://api.ipify.org/?format=json", function(data) {
-    data = JSON.parse(data);
-    user_ip = data.ip;
-    console.log(user_ip);
-});
+
+fetch('/get_ip')
+    .then(res=>res.text())
+    .then(ip=>{
+        user_ip = ip
+        console.log(ip)
+    })
+
 var delta_x = 0,
     delta_y = 0;
 var press = 0;
@@ -2757,9 +2750,29 @@ function show_up_floor(choose_floor) {
     }
 
 }
-var clock = setInterval(catch_data, 3000);
+let url = `ws://${window.location.host}`
 
-function catch_data() {
-    console.log("抓取資料");
+function handlePath(event){
+    let path = event.data.toString().split(" ");
+    path_line = [];
+    for (let i = 1;i<path.length-2;i++){
+        path_line.push([Number(path[i]),Number(path[i+1])])
+    }
     Update();
 }
+
+var ws = new WebSocket(url)
+ws.onopen = ()=>{
+    var clock = setInterval(()=>{
+        if(ws.readyState === ws.CLOSED){
+            ws = new WebSocket(url)
+            ws.onmessage = handlePath
+        }else {
+            ws.send("gimme path!!!")
+        }
+    }, 5000);
+
+    ws.onmessage = handlePath
+}
+
+
