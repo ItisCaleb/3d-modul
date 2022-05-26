@@ -3,9 +3,9 @@
 #include <algorithm>
 using namespace std;
 
-const int Row = 500;
-const int Col = 500;
-const int Floor = 100;
+const int Row = 20;
+const int Col = 20;
+const int Floor = 10;
 int n = Row * Col * Floor;
 int dist[Row*Col*Floor+5];
 int from[Row*Col*Floor+5];
