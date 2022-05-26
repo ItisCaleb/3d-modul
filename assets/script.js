@@ -2470,30 +2470,56 @@ function show_up() {
             ctx.stroke();
         }
     }
-    for (let i = 0; i < stair_show.length; i++) {
-        if (f[stairFloor[i]]) {
-            if (move > 0.4) {
-                ctx.beginPath();
-                ctx.fillStyle = "#7E654C";
-                ctx.strokeStyle = "#7E654C";
-                ctx.arc(origin[0] + stair_show[i][0], origin[1] + stair_show[i][2], Math.min(2 * move, 3), 0, 2 * Math.PI);
-                ctx.fill();
-                ctx.stroke();
+
+    if (havepath) {
+
+        for (let i = 0; i < path_line.length; i++) {
+            for (let j = 0; j < 2; j++) {
+                var tmp = [];
+                if (path_line[i][j] < path_show.length) {
+                    tmp = path_show[path_line[i][j]];
+                } else {
+                    tmp = stair_show[path_line[i][j] - path_show.length];
+                }
+                if (f[wifiFloor[path_line[i][j]]] /*&& !point_status[i]*/ ) {
+                    if (move > 0.4) {
+                        ctx.beginPath();
+                        ctx.fillStyle = "#AA00AA";
+                        ctx.strokeStyle = "#AA00AA";
+                        ctx.arc(origin[0] + tmp[0], origin[1] + tmp[2], Math.min(2 * move, 3), 0, 2 * Math.PI);
+                        ctx.fill();
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+    } else {
+        for (let i = 0; i < stair_show.length; i++) {
+            if (f[stairFloor[i]]) {
+                if (move > 0.4) {
+                    ctx.beginPath();
+                    ctx.fillStyle = "#7E654C";
+                    ctx.strokeStyle = "#7E654C";
+                    ctx.arc(origin[0] + stair_show[i][0], origin[1] + stair_show[i][2], Math.min(2 * move, 3), 0, 2 * Math.PI);
+                    ctx.fill();
+                    ctx.stroke();
+                }
+            }
+        }
+        for (let i = 0; i < path_show.length; i++) {
+            if (f[wifiFloor[i]] /*&& !point_status[i]*/ ) {
+                if (move > 0.4) {
+                    ctx.beginPath();
+                    ctx.fillStyle = "#AA00AA";
+                    ctx.strokeStyle = "#AA00AA";
+                    ctx.arc(origin[0] + path_show[i][0], origin[1] + path_show[i][2], Math.min(2 * move, 3), 0, 2 * Math.PI);
+                    ctx.fill();
+                    ctx.stroke();
+                }
             }
         }
     }
-    for (let i = 0; i < path_show.length; i++) {
-        if (f[wifiFloor[i]] /*&& !point_status[i]*/ ) {
-            if (move > 0.4) {
-                ctx.beginPath();
-                ctx.fillStyle = "#AA00AA";
-                ctx.strokeStyle = "#AA00AA";
-                ctx.arc(origin[0] + path_show[i][0], origin[1] + path_show[i][2], Math.min(2 * move, 3), 0, 2 * Math.PI);
-                ctx.fill();
-                ctx.stroke();
-            }
-        }
-    }
+
     for (let i = 0; i < path_line.length; i++) {
         if (f[wifiFloor[line[i][0]]] && f[wifiFloor[line[i][1]]] /*&& !point_status[line[i][0]] && !point_status[line[i][1]] */ ) {
             ctx.beginPath();
@@ -2535,17 +2561,8 @@ for (let i = 0; i < path_point.length; i++) {
 show_up();
 var user_ip;
 
-function json(url) {
-    return fetch(url).then(res => res.json());
-}
+// user_ip = <%= ins %>;
 
-let apiKey = 'f3a48a1a1ad4fb6fc6e995dfa044dcd65914eaab12b1fbdbb1d2b18c';
-json(`https://api.ipdata.co?api-key=${apiKey}`).then(data => {
-    console.log(data.ip);
-    console.log(data.city);
-    console.log(data.country_code);
-    // so many more properties
-});
 // get_ip("https://api.ipify.org/?format=json", function(data) {
 //     data = JSON.parse(data);
 //     user_ip = data.ip;
@@ -2554,6 +2571,7 @@ json(`https://api.ipdata.co?api-key=${apiKey}`).then(data => {
 var delta_x = 0,
     delta_y = 0;
 var press = 0;
+var havepath = 0;
 
 function Update() {
     ctx.clearRect(0, 0, 1080, 720);
@@ -2631,6 +2649,8 @@ function reset() {
     alpha = 0;
     delta_x = 0;
     delta_y = 0;
+    havepath = 0;
+    path_line = [];
     graph = [];
     path_point = [];
     stair_point = [];
@@ -2709,6 +2729,7 @@ function inpoint(mouse, point) {
     }
     return false;
 }
+var target_status;
 
 function floor_click(evt) {
     var mouse = [0, 0];
@@ -2736,10 +2757,19 @@ function floor_click(evt) {
         }
         if (!choosestair)
             wantto = -1;
-        else
+        else {
+            target_status = 1;
             console.log("stair %d", wantto);
-    } else
+            ws.send(wantto + ori_path.length);
+            havepath = 1;
+        }
+    } else {
+        target_status = 0;
         console.log("wifi %d", wantto);
+        ws.send(wantto);
+        havepath = 1;
+    }
+    Update();
 }
 
 
@@ -2787,7 +2817,18 @@ function show_up_floor(choose_floor) {
         }
     }
     for (let i = 0; i < path_line.length; i++) {
-        if (wifiFloor[line[i][0]] == choose_floor && wifiFloor[line[i][1]] == choose_floor) {
+        var temp = [];
+        if (path_line[i][0] < ori_path.length) {
+            temp.push(wifiFloor);
+        } else {
+            temp.push(stairFloor);
+        }
+        if (path_line[i][1] < ori_path.length) {
+            temp.push(wifiFloor);
+        } else {
+            temp.push(stairFloor);
+        }
+        if (temp[0][path_line[i][0] - (path_line[i][0] < ori_path.length ? 0 : ori_path.length)] == choose_floor && temp[1][path_line[i][1] - (path_line[i][1] < ori_path.length ? 0 : ori_path.length)] == choose_floor) {
             floor_ctx.beginPath();
             var tmp = [];
             if (path_line[i][0] < ori_path.length) {
@@ -2826,9 +2867,9 @@ ws.onopen = () => {
             ws = new WebSocket(url)
             ws.onmessage = handlePath
         } else {
-            ws.send(wantto)
+            ws.send(wantto - (target_status ? path_point.length : 0))
         }
-    }, 5000);
+    }, 3000);
 
     ws.onmessage = handlePath
 }
