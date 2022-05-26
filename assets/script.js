@@ -2826,7 +2826,7 @@ ws.onopen = () => {
             ws = new WebSocket(url)
             ws.onmessage = handlePath
         } else {
-            ws.send("gimme path!!!")
+            ws.send(wantto)
         }
     }, 5000);
 
