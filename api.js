@@ -43,7 +43,8 @@ module.exports = (server) =>{
     wss.on('connection',(ws,req)=>{
         this.ip = req.socket.remoteAddress;
         ws.on('message', data=>{
-            path.stdin.write(`${this.ip} 30 86\n`,'utf8')
+            let dist = Number(data.toString());
+            path.stdin.write(`${this.ip} 30 ${dist}\n`,'utf8')
         })
         path.stdout.on("data", data=>{
             if(data.toString().split(" ")[0] === this.ip){
